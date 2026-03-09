@@ -1,16 +1,14 @@
 import { extractTextFromFile, parseQuestions, parseAnswerKey } from './parser.js';
 import { UI } from './ui.js';
 
-// Application State
 const state = {
     questions: [],
-    userAnswers: {}, // { "1": "A", "2": "C" }
-    answerKey: null, // { "1": "A", "2": "C" }
+    userAnswers: {},
+    answerKey: null,
     timeRemaining: 0,
     timerInterval: null
 };
 
-// DOM Elements
 const elements = {
     fileUpload: document.getElementById('file-upload'),
     timeInput: document.getElementById('time-input'),
@@ -19,10 +17,9 @@ const elements = {
     btnSubmit: document.getElementById('btn-submit')
 };
 
-// Start Quiz Logic
 elements.btnStart.addEventListener('click', async () => {
     const file = elements.fileUpload.files[0];
-    if (!file) return alert('Vui lòng upload file đề thi!');
+    if (!file) return alert('Vui lòng chọn file đề thi (.docx hoặc .pdf) để tiếp tục.');
 
     elements.btnStart.disabled = true;
     elements.btnStart.textContent = 'Đang xử lý dữ liệu...';
@@ -32,13 +29,12 @@ elements.btnStart.addEventListener('click', async () => {
         state.questions = parseQuestions(rawText);
         
         if (state.questions.length === 0) {
-            throw new Error('Không nhận diện được câu hỏi. Vui lòng kiểm tra lại format đề (Câu X:, A., B., C., D.).');
+            throw new Error('Không thể bóc tách câu hỏi. Vui lòng đảm bảo cấu trúc đề thi đúng chuẩn (VD: Câu 1: ... A. ... B. ... C. ... D. ...).');
         }
 
         state.answerKey = parseAnswerKey(elements.keyInput.value);
         state.timeRemaining = parseInt(elements.timeInput.value) * 60;
 
-        // Render & Chuyển màn hình
         UI.renderQuestions(state.questions, 'questions-container', (id, val) => {
             state.userAnswers[id] = val;
         });
@@ -53,7 +49,6 @@ elements.btnStart.addEventListener('click', async () => {
     }
 });
 
-// Timer Logic
 function startTimer() {
     updateTimerUI();
     state.timerInterval = setInterval(() => {
@@ -73,7 +68,6 @@ function updateTimerUI() {
     UI.updateTimer(minutes, seconds);
 }
 
-// Submit Logic
 function submitQuiz() {
     clearInterval(state.timerInterval);
     UI.renderResults(state.questions, state.userAnswers, state.answerKey, 'result-container');
@@ -82,7 +76,7 @@ function submitQuiz() {
 }
 
 elements.btnSubmit.addEventListener('click', () => {
-    if (confirm('Bạn có chắc chắn muốn nộp bài sớm?')) {
+    if (confirm('Bạn có chắc chắn muốn nộp bài? Hãy kiểm tra lại các đáp án trước khi xác nhận.')) {
         submitQuiz();
     }
 });

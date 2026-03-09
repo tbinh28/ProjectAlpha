@@ -3,43 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>English Quiz App</title>
+    <title>Hệ thống Thi trắc nghiệm Tiếng Anh</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <style>
-        /* Tùy chỉnh thanh cuộn mượt mà */
         html { scroll-behavior: smooth; }
         .hidden-screen { display: none !important; }
+        /* Tùy chỉnh thanh cuộn cho phần bài đọc */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans antialiased">
 
     <div id="setup-screen" class="min-h-screen flex items-center justify-center p-4">
-        <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-lg">
-            <h1 class="text-2xl font-bold text-center mb-6 text-blue-600">Thiết lập bài thi</h1>
+        <div class="bg-white p-8 rounded-3xl shadow-xl w-full max-w-lg border border-slate-100">
+            <h1 class="text-3xl font-bold text-center mb-8 text-blue-700">Thiết lập bài thi</h1>
             
-            <div class="space-y-4">
+            <div class="space-y-5">
                 <div>
-                    <label class="block text-sm font-semibold mb-2">Upload Đề thi (.docx, .pdf)</label>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Tải lên Đề thi (.docx, .pdf)</label>
                     <input type="file" id="file-upload" accept=".docx, .pdf" 
-                           class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                           class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50">
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold mb-2">Thời gian làm bài (Phút)</label>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Thời gian làm bài (Phút)</label>
                     <input type="number" id="time-input" value="60" min="1" 
-                           class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                           class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50">
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold mb-2">Đáp án (Không bắt buộc)</label>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Key Đáp án (Không bắt buộc)</label>
                     <textarea id="key-input" rows="3" placeholder="Ví dụ: 1A 2B 3C..." 
-                              class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-                    <p class="text-xs text-gray-500 mt-1">Hỗ trợ tự động chấm điểm nếu nhập key.</p>
+                              class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 custom-scrollbar"></textarea>
+                    <p class="text-xs text-slate-500 mt-2">Hỗ trợ tự động chấm điểm nếu nhập đúng định dạng.</p>
                 </div>
 
-                <button id="btn-start" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition duration-200 mt-4 disabled:opacity-50">
+                <button id="btn-start" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition duration-200 mt-6 shadow-md shadow-blue-200 disabled:opacity-70">
                     Bắt đầu thi
                 </button>
             </div>
@@ -47,30 +50,30 @@
     </div>
 
     <div id="quiz-screen" class="min-h-screen hidden-screen pb-20">
-        <header class="sticky top-0 bg-white shadow-md z-50 px-4 py-3 flex justify-between items-center">
-            <h2 class="text-lg font-bold text-gray-700">Đang làm bài</h2>
-            <div class="text-2xl font-mono font-bold text-red-600 bg-red-50 px-4 py-1 rounded-lg" id="timer-display">
+        <header class="sticky top-0 bg-white/90 backdrop-blur-md border-b border-slate-200 z-50 px-6 py-4 flex justify-between items-center shadow-sm">
+            <h2 class="text-xl font-bold text-slate-700">Đang làm bài</h2>
+            <div class="text-2xl font-mono font-bold text-red-600 bg-red-50 border border-red-100 px-5 py-1.5 rounded-xl shadow-inner" id="timer-display">
                 00:00
             </div>
-            <button id="btn-submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-lg transition duration-200">
+            <button id="btn-submit" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2.5 px-8 rounded-xl transition duration-200 shadow-md shadow-emerald-200">
                 Nộp bài
             </button>
         </header>
 
-        <main class="max-w-4xl mx-auto mt-6 p-4 space-y-6" id="questions-container">
+        <main class="max-w-4xl mx-auto mt-8 p-4" id="questions-container">
             </main>
     </div>
 
     <div id="result-screen" class="min-h-screen hidden-screen p-4 flex flex-col items-center">
-        <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-4xl mt-10 text-center">
-            <h1 class="text-3xl font-bold text-gray-800 mb-2">Kết quả bài thi</h1>
-            <div id="score-display" class="text-5xl font-extrabold text-blue-600 mb-6"></div>
+        <div class="bg-white p-10 rounded-3xl shadow-xl w-full max-w-4xl mt-12 text-center border border-slate-100">
+            <h1 class="text-3xl font-bold text-slate-800 mb-4">Kết quả bài thi</h1>
+            <div id="score-display" class="text-6xl font-extrabold text-blue-600 mb-10 tracking-tight"></div>
             
-            <div class="text-left space-y-6 mt-8" id="result-container">
+            <div class="text-left space-y-6" id="result-container">
                 </div>
 
-            <button onclick="location.reload()" class="mt-8 bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 px-8 rounded-xl transition duration-200">
-                Làm lại / Tải đề mới
+            <button onclick="location.reload()" class="mt-12 bg-slate-800 hover:bg-slate-900 text-white font-bold py-4 px-10 rounded-xl transition duration-200 shadow-lg">
+                Thi lại / Tải đề mới
             </button>
         </div>
     </div>
